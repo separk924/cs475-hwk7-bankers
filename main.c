@@ -56,20 +56,42 @@ int main(int argc, char *argv[])
             fscanf(file, "%d", &alloc[i][j]);
           }
         }
-
+        /*  Sanity checks */
+        /*  check that currently allocated resources do not exceed total number of resources  */
+        int *temp = malloc(NRES*sizeof(int));
+        for (i = 0; i < n; i++){
+          for (j = 0; j < m; j++){
+              temp[j] += alloc[i][j];
+              if(temp[j]>available[j]){
+                printf("Integrity test failed: allocated resources exceed total resources\n");
+                exit(0);
+              }
+          } 
+        }
+        /*  check that threads' needs do not exceed its max demands for each resource type  */
+        for (i = 0; i < n; i++){
+          for (j = 0; j < m; j++){
+              if(max[i][j]<alloc[i][j]){
+                int num = max[i][j] - alloc[i][j];
+                printf("Integrity test failed: allocated resources exceed demand for Thread %d\nNeed %d instances of resource %d\n", i, num, j);
+                exit(0);
+              }
+          } 
+        }
+          /* code */
+        
         /** check if safe **/
         isSafe(available, max, alloc);
 
       }else{ // if file does not exist
         printf("Error: File does not exist\n");
       }
-  }
-  // TODO: Run banker's safety algorithm
-  free(available);
-  for (int i = 0; i < m; i++)
-  {
-    free(max[i]);
-    free(alloc[i]);
+    // TODO: Run banker's safety algorithm
+    free(available);
+    for (int i = 0; i < m; i++){
+      free(max[i]);
+      free(alloc[i]);
+    }
   }
   return 0;
 }
